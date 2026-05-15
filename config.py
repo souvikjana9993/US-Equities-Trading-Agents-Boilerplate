@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # AI Model Configuration
-AI_MODEL = os.getenv("AI_MODEL", "gemini/gemini-flash-latest")
+AI_MODEL = os.getenv("AI_MODEL", "gemini/gemma-4-31b-it")
 
 # Agent-Specific Settings
 AGENT_CONFIG = {

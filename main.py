@@ -93,5 +93,22 @@ async def analyze_technical(ticker: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.get("/fundamental/{ticker}", response_model=FundamentalAnalysisResponse)
+async def analyze_fundamental(ticker: str):
+    try:
+        response_text = fund_agent(f"Analyze the fundamentals for {ticker}")
+        analysis_data = extract_json(str(response_text))
+        return FundamentalAnalysisResponse(**analysis_data)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/news/{ticker}")
+async def analyze_news(ticker: str):
+    try:
+        response_text = news_agent(f"Summarize the recent news sentiment for {ticker}")
+        return {"ticker": ticker, "analysis": str(response_text)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

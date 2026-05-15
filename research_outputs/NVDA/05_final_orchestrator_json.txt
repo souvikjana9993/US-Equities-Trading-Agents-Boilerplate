@@ -1,0 +1,47 @@
+```json
+{
+  "ticker": "NVDA",
+  "period": "3mo",
+  "suggested_action": "Long",
+  "confidence_rating": 0.8,
+  "narrative_summary": "NVDA is exhibiting a strong uptrend with a trend score of 90.4 and bullish momentum indicated by an RSI of 64.67 and a positive MACD histogram. The price is currently trading above its 9, 21, and 50-day EMAs. While no resistance levels were identified in the analysis, strong support is established at 193.79. A risk-managed entry at 225.32 is proposed with a target of 247.79 and a stop loss at 210.34, providing a risk/reward ratio of 1.5. Options chain data was unavailable for this analysis.",
+  "scores": [
+    {
+      "agent_name": "Technical Analysis",
+      "rating": 0.9,
+      "summary": "Strong uptrend (score 90.4) with bullish RSI and MACD signals.",
+      "label": "Strong Bullish"
+    },
+    {
+      "agent_name": "Price Action",
+      "rating": 0.7,
+      "summary": "Price is above key EMAs with strong support at 193.79; no resistance levels found.",
+      "label": "Bullish"
+    },
+    {
+      "agent_name": "Options Analysis",
+      "rating": 0.0,
+      "summary": "No data available.",
+      "label": "Neutral"
+    },
+    {
+      "agent_name": "Risk Management",
+      "rating": 0.8,
+      "summary": "Clear risk/reward setup of 1.5 with a defined stop at 210.34 and target at 247.79.",
+      "label": "Positive"
+    }
+  ],
+  "research_context": {
+    "current_price": 225.32,
+    "trend_score": 90.4,
+    "rsi": 64.67,
+    "support_levels": [
+      216.83,
+      197.42,
+      193.79,
+      190.39,
+      188.16
+    ]
+  }
+}
+```

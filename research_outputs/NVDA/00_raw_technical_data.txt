@@ -1,0 +1,1 @@
+{'ticker': 'NVDA', 'current_price': 225.32, 'sma': {'50': 193.07, '200': 185.96}, 'rsi': 64.66, 'macd': {'line': 8.7797, 'hist': 1.8312}, 'bollinger': {'upper': 231.49, 'lower': 175.25}, 'pivot_points': {'pp': 227.02, 'r1': 229.8, 's1': 222.55}, 'overall_signal': 'BULLISH'}

@@ -3,26 +3,26 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# AI Model Configuration
+# AI Model Configuration - REVERTING TO STABLE DEFAULT
 AI_MODEL = os.getenv("AI_MODEL", "gemini/gemma-4-31b-it")
 
 # Agent-Specific Settings
 AGENT_CONFIG = {
     "technical": {
-        "temperature": 0.0,  # Precision is key
+        "temperature": 0.0,
         "model": AI_MODEL
     },
     "fundamental": {
-        "temperature": 0.1,  # Mostly data-driven
+        "temperature": 0.1,
         "model": AI_MODEL
     },
     "news": {
-        "temperature": 0.4,  # Needs to interpret sentiment/nuance
+        "temperature": 0.4,
         "model": AI_MODEL
     },
     "orchestrator": {
-        "temperature": 0.3,  # Synthesizing complex reports
-        "model": AI_MODEL
+        "temperature": 0.0,
+        "model": "gemini/gemini-2.5-flash"
     }
 }
 

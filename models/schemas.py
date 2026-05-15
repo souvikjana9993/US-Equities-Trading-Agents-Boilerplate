@@ -1,42 +1,52 @@
 from pydantic import BaseModel, Field
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Optional, Any
 
-class TechnicalAnalysisResponse(BaseModel):
-    ticker: str
-    recommendation: str = Field(..., description="BUY, SELL, or HOLD")
-    overall_summary: str
-    indicators: Dict[str, Any]
-    bullish_signals: List[str]
-    bearish_signals: List[str]
+# --- Specialist Report Schemas ---
 
-class FundamentalAnalysisResponse(BaseModel):
-    ticker: str
-    recommendation: str = Field(..., description="BUY, SELL, or HOLD")
-    overall_summary: str
-    thesis: str
-    key_metrics: Dict[str, Any]
-    valuation_status: str
+class SpecialistReport(BaseModel):
+    rating: float = Field(..., ge=0.0, le=1.0)
+    summary: str
+    label: str
+
+class TechnicalReport(SpecialistReport): pass
+class FundamentalReport(SpecialistReport): pass
+class NewsReport(SpecialistReport): pass
+class ValuationReport(SpecialistReport): pass
+
+# --- Orchestrator Verdict Schema ---
+
+class OrchestratorVerdict(BaseModel):
+    """The final decision-making output from the CIO."""
+    suggested_action: str  # BUY, SELL, HOLD
+    confidence_rating: float = Field(..., ge=0.0, le=1.0)
+    narrative_summary: str
+
+# --- Final Dashboard & UI Schemas ---
 
 class AgentScore(BaseModel):
     agent_name: str
-    score: float = Field(..., ge=0, le=100)
-    label: str = Field(..., description="e.g., Bullish, Strong, Positive")
+    rating: float
+    summary: str
+    label: str
 
 class DashboardResponse(BaseModel):
+    """Final merged research session (Validated)."""
     ticker: str
-    recommendation: str = Field(..., description="BUY, SELL, HOLD")
-    confidence_score: float = Field(..., ge=0, le=100)
-    summary: str
+    period: str
     suggested_action: str
+    confidence_rating: float
+    narrative_summary: str
+    
+    # These come directly from specialists (The 'Ground Truth')
     scores: List[AgentScore]
-    technical_summary: str
-    fundamental_summary: str
-    news_summary: str
+    
+    # Internal context (used for chat hydration)
+    research_context: Optional[Dict[str, Any]] = None
 
 class ChatRequest(BaseModel):
     ticker: str
+    period: str = "1y"
     message: str
-    agent_type: Optional[str] = "orchestrator"
 
 class ChatResponse(BaseModel):
     response: str

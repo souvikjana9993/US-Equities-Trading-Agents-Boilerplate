@@ -1,0 +1,9 @@
+strands-agents
+fastapi
+uvicorn
+yfinance
+pandas
+numpy
+python-dotenv
+ta-lib
+mcp

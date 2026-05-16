@@ -25,14 +25,14 @@ class HallucinationGuardrail:
         # We only care about the summary and the raw tool data
         scores = self.model.predict([(premise, hypothesis)])
         verdict = np.argmax(scores)
+        self.last_result = ("Hypothesis not supported by data.", int(verdict))
         
         # 1 is Entailment. 0 (Contradiction) and 2 (Neutral) are rejected.
         is_safe = (verdict == 1)
-        
-        if not is_safe:
-            logging.warning(f"GUARDRAIL TRIGGERED: Hypothesis not supported by data.\nVerdict: {verdict}\nHypothesis: {hypothesis[:100]}...")
-            
         return is_safe
+
+    def get_last_result(self):
+        return getattr(self, 'last_result', ("No checks run yet.", -1))
 
 # Singleton instance
 global_guardrail = HallucinationGuardrail()

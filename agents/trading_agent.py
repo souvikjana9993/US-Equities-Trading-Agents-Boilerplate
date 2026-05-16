@@ -1,7 +1,8 @@
 import os
 import json
+import time
+import google.generativeai as genai
 from strands import Agent
-from strands.models.gemini import GeminiModel
 from models.schemas import (
     TechnicalReport, 
     FundamentalReport, 
@@ -19,21 +20,43 @@ from prompts.trading_prompts import (
 )
 import config
 
+# --- GOOGLE SDK BRIDGE (HARDENED) ---
+class GoogleSDKModel:
+    def __init__(self, model_id, temperature=0.0):
+        genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+        # Remove prefixes like 'gemini/' or 'models/'
+        self.model_id = model_id.replace("gemini/", "").replace("models/", "")
+        self.temperature = temperature
+        self.model = genai.GenerativeModel(self.model_id)
+
+    def __call__(self, prompt):
+        # Retry loop for 500/Transient errors
+        for attempt in range(3):
+            try:
+                response = self.model.generate_content(
+                    prompt,
+                    generation_config=genai.types.GenerationConfig(temperature=self.temperature)
+                )
+                return response.text
+            except Exception as e:
+                if attempt == 2: raise e
+                print(f"Retrying Google SDK call ({attempt+1}/3) due to: {e}")
+                time.sleep(2 * (attempt + 1))
+        return ""
+
 def create_agent_with_config(cfg, system_prompt, tools=None):
-    # Restoring native Strands GeminiModel
-    model = GeminiModel(
-        model_id=cfg["model"].replace("gemini/", ""),
-        client_args={
-            "api_key": os.getenv("GOOGLE_API_KEY"),
-            "http_options": {"api_version": "v1beta"} # Defaulting back to v1beta with correct model name
-        },
-        params={"temperature": cfg["temperature"]}
+    # Using our Bulletproof SDK Bridge with internal retries
+    model = GoogleSDKModel(
+        model_id=cfg["model"],
+        temperature=cfg["temperature"]
     )
-    return Agent(
-        model=model,
-        system_prompt=system_prompt,
-        tools=tools or []
-    )
+    
+    # We return a callable that Strands can treat as an agent
+    def agent_fn(message):
+        full_prompt = f"{system_prompt}\n\nUSER MESSAGE: {message}"
+        return model(full_prompt)
+        
+    return agent_fn
 
 # --- AGENT FACTORIES ---
 

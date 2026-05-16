@@ -70,12 +70,20 @@ async def run_specialist_with_guardrail(name, agent_factory, tool_func, ticker, 
             report_dict = extract_json(str(res))
             validated_report = schema_model(**report_dict)
             
-            # 3. NLI Guardrail Check
-            if global_guardrail.check_entailment(raw_data, validated_report.summary):
+            # 3. NLI Guardrail Check (Strip citations before checking)
+            clean_summary = re.sub(r'\[(Citation|Source).*?\]', '', validated_report.summary)
+            
+            # DEBUG LOGS
+            logging.info(f"--- GUARDRAIL DEBUG ({name}) ---")
+            logging.info(f"PREMISE: {raw_data[:500]}...") # First 500 chars
+            logging.info(f"CLEAN HYPOTHESIS: {clean_summary}")
+            
+            if global_guardrail.check_entailment(raw_data, clean_summary):
                 logging.info(f"Guardrail passed for {name} on attempt {attempt+1}")
                 return validated_report
             else:
-                last_error = "Hallucination detected. Agent summary included facts NOT present in the raw data."
+                message, verdict = global_guardrail.get_last_result()
+                logging.warning(f"GUARDRAIL TRIGGERED for {name}: {message}\nVerdict: {verdict}\nCleaned Claim: {clean_summary}")
                 logging.warning(f"Guardrail failed for {name} on attempt {attempt+1}")
                 
         except Exception as e:
@@ -101,7 +109,8 @@ async def get_dashboard(ticker: str, period: str = "1y"):
         news_data = await run_specialist_with_guardrail("News", create_news_agent, get_recent_news_sentiment, ticker, period, NewsReport)
         
         # 2. Valuation expansion (Guarded by Fundamental summary)
-        async def mock_val_tool(t): return fund_data.summary # Premise is the fundamental findings
+        # Fix: Standard def instead of async def for thread compatibility
+        def mock_val_tool(t): return fund_data.summary 
         val_data = await run_specialist_with_guardrail("Valuation", create_valuation_agent, mock_val_tool, ticker, period, ValuationReport)
         
         specialist_scores = [
@@ -129,8 +138,9 @@ async def get_dashboard(ticker: str, period: str = "1y"):
                 verdict_dict = extract_json(str(master_res))
                 verdict = OrchestratorVerdict(**verdict_dict)
                 
-                # NLI Guardrail for CIO
-                if global_guardrail.check_entailment(evidence_block, verdict.narrative_summary):
+                # NLI Guardrail for CIO (Strip citations before checking)
+                clean_narrative = re.sub(r'\[Citation.*?\]', '', verdict.narrative_summary)
+                if global_guardrail.check_entailment(evidence_block, clean_narrative):
                     logging.info(f"CIO Guardrail passed on attempt {attempt+1}")
                     break
                 else:
@@ -177,4 +187,4 @@ async def chat(request: ChatRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8002)

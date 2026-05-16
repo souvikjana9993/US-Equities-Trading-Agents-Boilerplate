@@ -8,24 +8,31 @@ logger = logging.getLogger("FundamentalTool")
 @tool
 def get_comprehensive_fundamentals(ticker: str) -> str:
     """
-    Fetches comprehensive fundamental data for a given US stock ticker.
-    Includes financials, balance sheet, cash flow, and key valuation metrics.
+    Fetches comprehensive fundamental data for a given stock ticker.
+    Supports both US and Indian tickers (.NS, .BO).
     """
-    logger.info(f"Fetching comprehensive fundamentals for {ticker}...")
+    # No auto-suffixing to avoid breaking US tickers like TSM
+    ns_ticker = ticker
+    logger.info(f"Fetching comprehensive fundamentals for {ns_ticker}...")
+    
     try:
-        stock = yf.Ticker(ticker)
+        stock = yf.Ticker(ns_ticker)
         info = stock.info
         
-        # Helper to safely get nested info
-        def safe_get(d, key, default="N/A"):
-            val = d.get(key, default)
-            return val if val is not None else default
+        # Helper to safely get nested info with fallback keys
+        def safe_get(d, keys, default="N/A"):
+            if isinstance(keys, str): keys = [keys]
+            for key in keys:
+                val = d.get(key)
+                if val is not None and val != "":
+                    return val
+            return default
 
         summary = {
             "business_summary": safe_get(info, "longBusinessSummary"),
             "valuation": {
-                "market_cap": safe_get(info, "marketCap"),
-                "trailing_pe": safe_get(info, "trailingPE"),
+                "market_cap": safe_get(info, ["marketCap", "enterpriseValue"]),
+                "trailing_pe": safe_get(info, ["trailingPE", "forwardPE"]),
                 "forward_pe": safe_get(info, "forwardPE"),
                 "price_to_book": safe_get(info, "priceToBook"),
                 "ev_to_ebitda": safe_get(info, "enterpriseToEbitda"),
@@ -48,7 +55,7 @@ def get_comprehensive_fundamentals(ticker: str) -> str:
             }
         }
         
-        # Adding a snapshot of recent financials if available
+        # Adding a snapshot of recent financials
         try:
             financials = stock.quarterly_financials
             if not financials.empty:
@@ -59,5 +66,5 @@ def get_comprehensive_fundamentals(ticker: str) -> str:
 
         return str(summary)
     except Exception as e:
-        logger.error(f"Error in comprehensive fundamentals: {e}")
+        logger.error(f"Error: {e}")
         return f"Error: {str(e)}"

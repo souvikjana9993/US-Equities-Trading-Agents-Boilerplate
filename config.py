@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # AI Model Configuration - REVERTING TO STABLE DEFAULT
-AI_MODEL = os.getenv("AI_MODEL", "models/gemma-4-31b-it")
+AI_MODEL = os.getenv("AI_MODEL", "models/gemma-4-26b-a4b-it")
 
 # Agent-Specific Settings
 AGENT_CONFIG = {

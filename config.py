@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # AI Model Configuration - REVERTING TO STABLE DEFAULT
-AI_MODEL = os.getenv("AI_MODEL", "gemini/gemma-4-31b-it")
+AI_MODEL = os.getenv("AI_MODEL", "models/gemma-4-31b-it")
 
 # Agent-Specific Settings
 AGENT_CONFIG = {
@@ -22,7 +22,7 @@ AGENT_CONFIG = {
     },
     "orchestrator": {
         "temperature": 0.0,
-        "model": "gemini/gemini-2.5-flash"
+        "model": AI_MODEL
     }
 }
 

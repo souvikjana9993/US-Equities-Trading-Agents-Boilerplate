@@ -1,7 +1,0 @@
-```json
-{
-  "rating": 0.5,
-  "summary": "Insufficient recent news data was available to perform a detailed sentiment analysis for NVDA at this time.",
-  "label": "Neutral"
-}
-```

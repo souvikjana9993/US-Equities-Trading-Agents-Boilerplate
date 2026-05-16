@@ -22,7 +22,7 @@ def get_comprehensive_fundamentals(ticker: str) -> str:
             return val if val is not None else default
 
         summary = {
-            "business_summary": safe_get(info, "longBusinessSummary")[:500] + "...",
+            "business_summary": safe_get(info, "longBusinessSummary"),
             "valuation": {
                 "market_cap": safe_get(info, "marketCap"),
                 "trailing_pe": safe_get(info, "trailingPE"),

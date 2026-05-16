@@ -1,9 +1,7 @@
+import os
+import json
 from strands import Agent
-from strands.models.litellm import LiteLLMModel
-from tools.technical_tool import get_comprehensive_technical_analysis
-from tools.fundamental_tool import get_comprehensive_fundamentals
-from tools.news_tool import get_recent_news_sentiment
-from tools.mcp_manager import get_financial_mcp_client
+from strands.models.gemini import GeminiModel
 from models.schemas import (
     TechnicalReport, 
     FundamentalReport, 
@@ -20,11 +18,15 @@ from prompts.trading_prompts import (
     CHAT_CONTEXT_PROMPT
 )
 import config
-import json
 
 def create_agent_with_config(cfg, system_prompt, tools=None):
-    model = LiteLLMModel(
-        model_id=cfg["model"],
+    # Restoring native Strands GeminiModel
+    model = GeminiModel(
+        model_id=cfg["model"].replace("gemini/", ""),
+        client_args={
+            "api_key": os.getenv("GOOGLE_API_KEY"),
+            "http_options": {"api_version": "v1beta"} # Defaulting back to v1beta with correct model name
+        },
         params={"temperature": cfg["temperature"]}
     )
     return Agent(
@@ -32,6 +34,8 @@ def create_agent_with_config(cfg, system_prompt, tools=None):
         system_prompt=system_prompt,
         tools=tools or []
     )
+
+# --- AGENT FACTORIES ---
 
 def create_technical_agent(ticker: str, period: str):
     cfg = config.AGENT_CONFIG["technical"]
@@ -41,7 +45,7 @@ def create_technical_agent(ticker: str, period: str):
         period=period, 
         schema=json.dumps(schema)
     )
-    return create_agent_with_config(cfg, prompt, tools=[get_comprehensive_technical_analysis])
+    return create_agent_with_config(cfg, prompt)
 
 def create_fundamental_agent(ticker: str, period: str):
     cfg = config.AGENT_CONFIG["fundamental"]
@@ -51,7 +55,7 @@ def create_fundamental_agent(ticker: str, period: str):
         period=period, 
         schema=json.dumps(schema)
     )
-    return create_agent_with_config(cfg, prompt, tools=[get_comprehensive_fundamentals])
+    return create_agent_with_config(cfg, prompt)
 
 def create_news_agent(ticker: str, period: str):
     cfg = config.AGENT_CONFIG["news"]
@@ -61,7 +65,7 @@ def create_news_agent(ticker: str, period: str):
         period=period, 
         schema=json.dumps(schema)
     )
-    return create_agent_with_config(cfg, prompt, tools=[get_recent_news_sentiment])
+    return create_agent_with_config(cfg, prompt)
 
 def create_valuation_agent(ticker: str, period: str):
     cfg = config.AGENT_CONFIG["fundamental"]
@@ -71,7 +75,7 @@ def create_valuation_agent(ticker: str, period: str):
         period=period, 
         schema=json.dumps(schema)
     )
-    return create_agent_with_config(cfg, prompt, tools=[get_comprehensive_fundamentals])
+    return create_agent_with_config(cfg, prompt)
 
 def create_orchestrator_agent(ticker: str, period: str, research_reports: str):
     cfg = config.AGENT_CONFIG["orchestrator"]
@@ -82,9 +86,7 @@ def create_orchestrator_agent(ticker: str, period: str, research_reports: str):
         research_reports=research_reports,
         schema=json.dumps(schema)
     )
-    financial_mcp = get_financial_mcp_client()
-    tools = [financial_mcp] if (config.USE_MCP and financial_mcp) else []
-    return create_agent_with_config(cfg, prompt, tools=tools)
+    return create_agent_with_config(cfg, prompt)
 
 def create_chat_agent(ticker: str, research_context: str):
     cfg = config.AGENT_CONFIG["orchestrator"]

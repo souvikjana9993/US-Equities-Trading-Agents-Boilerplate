@@ -27,3 +27,7 @@ Thumbs.db
 scratch/
 research_outputs/
 tests/
+
+# Local Streamlit UI state
+UI/watchlist.json
+UI/paper_portfolio.json

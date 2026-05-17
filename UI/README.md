@@ -19,7 +19,7 @@ http://localhost:8511
 
 ## Local AI config
 
-The app reads LiteLLM/OpenAI-compatible gateway settings from the repository root `.env` file. This file is ignored by git.
+The app reads LiteLLM/OpenAI-compatible gateway settings from either the repository root `.env` file or `UI/.env`. These files are ignored by git.
 
 Required values:
 
@@ -28,6 +28,8 @@ LITELLM_BASE_URL="https://your-gateway.example.com/v1"
 LITELLM_API_KEY="your-api-key"
 LITELLM_MODEL="gpt-5-nano"
 ```
+
+Use `UI/.env.example` as the masked template. Copy it to `UI/.env` locally and replace the masked API key with the real key.
 
 The sidebar field accepts either a ticker or company name. Inputs like `PEPSI` and `PEPSICO` are resolved through Yahoo Finance search before analysis runs.
 
